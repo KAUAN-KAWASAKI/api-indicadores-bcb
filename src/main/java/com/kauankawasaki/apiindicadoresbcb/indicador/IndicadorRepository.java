@@ -18,4 +18,6 @@ public interface IndicadorRepository extends JpaRepository<Indicador, IndicadorI
 
 	Optional<Indicador> findFirstBySerieOrderByDataDesc(String serie);
 
+	boolean existsBySerie(String serie);
+
 }

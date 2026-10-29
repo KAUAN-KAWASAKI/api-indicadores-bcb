@@ -21,6 +21,9 @@ public class IndicadorService {
 	}
 
 	public List<Indicador> buscarValores(String serie, LocalDate inicio, LocalDate fim) {
+		if (!repository.existsBySerie(serie)) {
+			throw new SerieNaoEncontradaException(serie);
+		}
 		if (inicio == null && fim == null) {
 			return repository.findBySerieOrderByDataAsc(serie);
 		}
