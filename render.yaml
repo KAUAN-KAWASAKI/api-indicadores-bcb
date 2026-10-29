@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: api-indicadores-bcb
+    runtime: docker
+    plan: free
+    branch: main
+    healthCheckPath: /v3/api-docs
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false

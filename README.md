@@ -84,6 +84,17 @@ DB_PASSWORD=sua_senha ./mvnw spring-boot:run   # Linux/macOS
 
 A API sobe em http://localhost:8080.
 
+## Docker e deploy
+
+O `Dockerfile` compila o projeto em uma etapa e gera uma imagem final só com o Java de execução e o `.jar`:
+
+```bash
+docker build -t api-indicadores-bcb .
+docker run -p 8080:8080 -e DB_URL=... -e DB_USERNAME=... -e DB_PASSWORD=... api-indicadores-bcb
+```
+
+O `render.yaml` descreve o serviço para o [Render](https://render.com). Em produção a API lê o MySQL do Aiven, com SSL (`?sslMode=REQUIRED` no `DB_URL`).
+
 ## Testes
 
 ```bash
