@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/KAUAN-KAWASAKI/api-indicadores-bcb/actions/workflows/ci.yml/badge.svg)](https://github.com/KAUAN-KAWASAKI/api-indicadores-bcb/actions/workflows/ci.yml)
 
+**API no ar:** https://api-indicadores-bcb.onrender.com/indicadores · [Swagger](https://api-indicadores-bcb.onrender.com/swagger-ui.html)
+
+> Hospedada no plano gratuito do Render: se ficar um tempo sem acesso, a primeira requisição pode levar cerca de 1 minuto para "acordar" a API.
+
 API REST em Java e Spring Boot que expõe os indicadores econômicos do Banco Central (Selic, IPCA e dólar). Os dados são coletados todos os dias pelo [pipeline-indicadores-bcb](https://github.com/KAUAN-KAWASAKI/pipeline-indicadores-bcb) e gravados em MySQL. Esta API apenas lê essa tabela.
 
 ```
