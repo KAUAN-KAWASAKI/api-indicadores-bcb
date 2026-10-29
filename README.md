@@ -2,30 +2,26 @@
 
 [![CI](https://github.com/KAUAN-KAWASAKI/api-indicadores-bcb/actions/workflows/ci.yml/badge.svg)](https://github.com/KAUAN-KAWASAKI/api-indicadores-bcb/actions/workflows/ci.yml)
 
-API REST em Java que expõe os indicadores econômicos do Banco Central (Selic, IPCA e dólar PTAX) para consulta por série e por período.
+API REST em Java e Spring Boot que expõe os indicadores econômicos do Banco Central (Selic, IPCA e dólar). Os dados são coletados todos os dias pelo [pipeline-indicadores-bcb](https://github.com/KAUAN-KAWASAKI/pipeline-indicadores-bcb) e gravados em MySQL. Esta API apenas lê essa tabela.
 
-Os dados vêm do [pipeline-indicadores-bcb](https://github.com/KAUAN-KAWASAKI/pipeline-indicadores-bcb), que coleta as séries da API de dados abertos do Banco Central (SGS) todo dia e grava num banco MySQL. Esta API só **lê** esse banco.
-
-## Stack
-
-- Java 25
-- Spring Boot 4.1 (Spring Web MVC e Spring Data JPA)
-- MySQL
-- springdoc-openapi (Swagger UI)
-- JUnit 5, Mockito e `@WebMvcTest` nos testes
-- GitHub Actions para o CI
+```
+API do Banco Central → pipeline (Python) → MySQL → esta API (Java) → site / clientes
+```
 
 ## Endpoints
 
 | Método | Rota | Descrição |
 |---|---|---|
 | GET | `/indicadores` | Lista as séries disponíveis |
-| GET | `/indicadores/{serie}` | Valores da série em ordem de data. Aceita `?inicio=` e `?fim=` (formato `AAAA-MM-DD`) |
-| GET | `/indicadores/{serie}/ultimo` | Valor mais recente da série |
+| GET | `/indicadores/{serie}` | Todos os valores de uma série, em ordem de data |
+| GET | `/indicadores/{serie}?inicio=AAAA-MM-DD&fim=AAAA-MM-DD` | Valores de uma série dentro de um período |
+| GET | `/indicadores/{serie}/ultimo` | Valor mais recente de uma série |
 
-Os filtros `inicio` e `fim` devem ser informados juntos, ou nenhum dos dois.
+Séries: `selic`, `ipca` e `dolar`. Os filtros `inicio` e `fim` devem ser informados juntos, ou nenhum dos dois.
 
 ### Exemplos
+
+Os valores abaixo são ilustrativos.
 
 `GET /indicadores`
 
@@ -52,44 +48,34 @@ Os filtros `inicio` e `fim` devem ser informados juntos, ou nenhum dos dois.
 ]
 ```
 
-Os valores acima são ilustrativos.
-
 ### Erros
 
-Os erros seguem o formato `ProblemDetail` (RFC 9457):
+Erros seguem o formato padrão [Problem Details (RFC 9457)](https://www.rfc-editor.org/rfc/rfc9457):
 
-| Status | Quando |
+| Situação | Status |
 |---|---|
-| 404 | A série não existe |
-| 400 | Só uma das datas foi informada, ou `inicio` é depois de `fim` |
-
-```json
-{
-  "title": "Série não encontrada",
-  "status": 404,
-  "detail": "..."
-}
-```
+| Série inexistente | 404 Not Found |
+| Só uma das datas informada, ou início depois do fim | 400 Bad Request |
 
 ## Documentação interativa
 
-Com a API rodando, abra o Swagger UI em http://localhost:8080/swagger-ui.html para testar os endpoints pelo navegador.
+A documentação interativa (Swagger) fica em http://localhost:8080/swagger-ui.html com a aplicação rodando. Dá para testar os endpoints direto pelo navegador.
 
 ## Como rodar
 
-Requer Java 25 e um MySQL com a tabela `indicadores` já carregada pelo [pipeline](https://github.com/KAUAN-KAWASAKI/pipeline-indicadores-bcb).
+Requer Java 25 e um MySQL com a tabela `indicadores` criada e preenchida pelo pipeline.
 
-A conexão é configurada por variáveis de ambiente:
+Configure as variáveis de ambiente:
 
 | Variável | Padrão | Descrição |
 |---|---|---|
-| `DB_URL` | `jdbc:mysql://localhost:3307/indicadores_bcb?serverTimezone=America/Sao_Paulo` | URL JDBC do banco |
-| `DB_USERNAME` | `root` | usuário |
-| `DB_PASSWORD` | vazio | senha |
+| `DB_URL` | `jdbc:mysql://localhost:3307/indicadores_bcb` | Endereço JDBC do banco |
+| `DB_USERNAME` | `root` | Usuário do banco |
+| `DB_PASSWORD` | (vazio) | Senha do banco |
 
 ```powershell
 $env:DB_PASSWORD = "sua_senha"
-.\mvnw.cmd spring-boot:run
+.\mvnw.cmd spring-boot:run    # Windows
 ```
 
 ```bash
@@ -104,15 +90,19 @@ A API sobe em http://localhost:8080.
 ./mvnw test
 ```
 
-Os testes do service (Mockito) e do controller (`@WebMvcTest`) não usam banco, por isso rodam em qualquer máquina e no CI sem nenhum secret. O workflow `.github/workflows/ci.yml` roda a suíte a cada push na `main` e em todo pull request.
+Os testes não precisam de banco: o service é testado com Mockito e o controller com `@WebMvcTest`. Por isso rodam em qualquer máquina e no CI sem nenhum secret. O workflow `.github/workflows/ci.yml` roda a suíte a cada push na `main` e em todo pull request.
 
 ## Estrutura
 
 ```
-src/main/java/.../indicador/   entidade, repository, service e controller
+src/main/java/.../indicador/   entidade, repository, service, controller e DTO
 src/main/java/.../erro/        tratamento de erros (ProblemDetail)
-src/test/java/                 testes do service e do controller
+src/test/java/.../indicador/   testes do service e do controller
 ```
+
+## Tecnologias
+
+Java 25 · Spring Boot 4 · Spring Data JPA · MySQL · JUnit 5 · Mockito · springdoc-openapi · GitHub Actions
 
 ## Licença
 
