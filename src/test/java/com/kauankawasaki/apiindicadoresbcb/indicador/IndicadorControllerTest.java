@@ -2,7 +2,9 @@ package com.kauankawasaki.apiindicadoresbcb.indicador;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.kauankawasaki.apiindicadoresbcb.config.CorsConfig;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -15,10 +17,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(IndicadorController.class)
+@Import(CorsConfig.class)
 class IndicadorControllerTest {
 
 	@Autowired
@@ -69,6 +73,15 @@ class IndicadorControllerTest {
 		mockMvc.perform(get("/indicadores/selic").param("inicio", "2026-02-01").param("fim", "2026-01-01"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.title").value("Período inválido"));
+	}
+
+	@Test
+	void devePermitirChamadasDeOutroSite() throws Exception {
+		when(service.listarSeries()).thenReturn(List.of("selic"));
+
+		mockMvc.perform(get("/indicadores").header("Origin", "https://kauankawasaki.pages.dev"))
+				.andExpect(status().isOk())
+				.andExpect(header().string("Access-Control-Allow-Origin", "*"));
 	}
 
 }
